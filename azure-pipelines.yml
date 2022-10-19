@@ -1,21 +1,25 @@
 
+
 pool:
   vmImage: ubuntu-latest
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+- task: Gradle@3
+  inputs:
+    gradleWrapperFile: 'gradlew'
+    tasks: 'build'
+    publishJUnitResults: true
+    testResultsFiles: '**/TEST-*.xml'
+    javaHomeOption: 'JDKVersion'
+    sonarQubeRunAnalysis: false
+    spotBugsAnalysis: false
 - task: SonarCloudPrepare@1
   inputs:
-    SonarCloud: 'Sonar'
-    organization: 'pruebacurso2'
-    projectKey: 'pruebaCurso2_pet-clinic'
+    SonarCloud: 'Sonarcloud'
+    organization: 'devops-test-v3'
+    projectKey: 'DevOps-Test-v3_pet-clinic'
     projectName: 'pet-clinic'
+
 - task: Gradle@3
   inputs:
     gradleWrapperFile: 'gradlew'
@@ -27,8 +31,34 @@ steps:
     sqGradlePluginVersionChoice: 'specify'
     sonarQubeGradlePluginVersion: '3.3'
     spotBugsAnalysis: false
+
+
 - task: dependency-check-build-task@6
   inputs:
     projectName: 'pet-clinic'
     scanPath: '$(Build.SourcesDirectory)/build/libs'
     format: 'HTML'
+
+- task: DockerInstaller@0
+  inputs:
+    dockerVersion: '17.09.0-ce'
+
+- task: Docker@2
+  inputs:
+    containerRegistry: 'Docker'
+    command: 'login'
+
+- task: Docker@2
+  inputs:
+    containerRegistry: 'Docker'
+    repository: 'clagosu/pet-clinic'
+    command: 'build'
+    Dockerfile: '**/Dockerfile'
+    tags: 'latest'
+
+- script: | 
+    sudo apt-get install -y rpm
+    wget https://github.com/aquasecurity/trivy/releases/download/v0.27.1/trivy_0.27.1_Linux-64bit.deb
+    sudo dpkg -i trivy_0.27.1_Linux-64bit.deb
+    trivy image clagosu/pet-clinic:latest
+  displayName: Image Scan
