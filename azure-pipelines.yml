@@ -15,9 +15,9 @@ steps:
     spotBugsAnalysis: false
 - task: SonarCloudPrepare@1
   inputs:
-    SonarCloud: 'Sonarcloud'
-    organization: 'devops-test-v3'
-    projectKey: 'DevOps-Test-v3_pet-clinic'
+    SonarCloud: 'Sonar'
+    organization: 'pruebacurso2'
+    projectKey: 'pruebaCurso2_pet-clinic'
     projectName: 'pet-clinic'
 
 - task: Gradle@3
